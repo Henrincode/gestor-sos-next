@@ -1,3 +1,4 @@
+import { Crushed } from 'next/font/google'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
