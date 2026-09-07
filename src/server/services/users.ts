@@ -5,16 +5,17 @@ import { LoginReq } from "@/types/auth";
 
 // create user
 const create = async (userCreateData: UserCreate): Promise<User> => {
-  const { email, ...userData } = userCreateData;
+  const { email, ...userData } = userCreateData
 
+  // begin faz rollback caso alguma requisição falhe
   return await sql.begin(async (tx) => {
-    // 1. Insere na tabela de usuários
+    // insere na tabela de usuários
     const [createdUser] = await tx<[{ id: number; name: string }]>`
       INSERT INTO sos_users ${tx(userData)}
       RETURNING id, name
-    `;
+    `
 
-    // 2. Insere na tabela de e-mails usando is_primary
+    // insere na tabela de e-mails usando is_primary
     const [createdEmail] = await tx<[{ email: string; is_primary: boolean }]>`
       INSERT INTO sos_user_emails ${tx({
       user_id: createdUser.id, // ajuste o nome da FK se for diferente no seu banco
@@ -22,9 +23,9 @@ const create = async (userCreateData: UserCreate): Promise<User> => {
       is_primary: true
     })}
       RETURNING email, is_primary
-    `;
+    `
 
-    // 3. Monta o retorno garantindo a compatibilidade com a type User (primary)
+    // monta o retorno garantindo a compatibilidade com a type User (primary)
     return {
       id: createdUser.id,
       name: createdUser.name,
@@ -34,11 +35,11 @@ const create = async (userCreateData: UserCreate): Promise<User> => {
           primary: createdEmail.is_primary // Mapeia is_primary (banco) para primary (tipo TS)
         }
       ]
-    };
-  });
-};
+    }
+  })
+}
 
-const findAll = unstable_cache(
+const getAll = unstable_cache(
   async () => {
 
   },
@@ -62,18 +63,40 @@ async function getPasswordByEmail(email: string) {
   return row || null
 }
 
-async function tokenCreate({id, token}: {id: number, token: string}) {
-  const [row] = await sql<[{token: string}]>`
-    INSERT INTO sos_user_tokens ${sql({user_id: id, token})}
-    returning token
+// create token
+async function tokenCreate({ id, token }: { id: number, token: string }) {
+  const [row] = await sql<[{ token: string }]>`
+    INSERT INTO sos_user_tokens ${sql({ user_id: id, token })}
+    RETURNING token
   `
   return row.token
+}
+
+// check token
+async function tokenCheck(token: string) {
+  const [row] = await sql<[{ id: number }]>`
+    SELECT 
+      u.id,
+      u.name,
+      e.id email_id,
+      e.email
+    from sos_users u
+    inner join sos_user_tokens t
+      on u.id = t.user_id
+    inner join sos_user_emails e
+      on u.id = e.user_id
+    where token = ${token}
+      and e.is_primary = true
+    LIMIT 1
+  `
+  return row || null
 }
 
 const userService = {
   create,
   getPasswordByEmail,
-  tokenCreate
-};
+  tokenCreate,
+  tokenCheck
+}
 
-export default userService;
+export default userService
