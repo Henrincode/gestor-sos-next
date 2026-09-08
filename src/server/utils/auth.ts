@@ -1,15 +1,15 @@
 import userService from "@/server/services/users";
 import { NextRequest, NextResponse } from "next/server";
+import authService from "../services/auth";
 
 export async function authenticateRequest(req: NextRequest) {
   // tenta extrair do cookie ou header
-  const tokenFromCookie = req.cookies.get("auth_token")?.value ?? req.cookies.get("token")?.value;
-  const authHeader = req.headers.get("authorization");
-  const tokenFromHeader = authHeader?.startsWith("Bearer ")
-    ? authHeader.split(" ")[1]
-    : undefined;
+  const tokenFromCookie = req.cookies.get("auth_token")?.value ?? req.cookies.get("token")?.value
+  const tokenFromHeader = req.headers.get("auth_token")
 
   const token = tokenFromCookie ?? tokenFromHeader;
+
+  console.log(token)
 
   // erro se o token não for enviado
   if (!token) {
@@ -23,7 +23,7 @@ export async function authenticateRequest(req: NextRequest) {
   }
 
   // valida no banco/serviço
-  const user = await userService.tokenCheck(token);
+  const user = await authService.check(token);
 
   // erro se o token for inválido
   if (!user) {

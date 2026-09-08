@@ -58,10 +58,7 @@ export async function POST(req: NextRequest) {
       {
         success: true,
         message: "Login realizado com sucesso",
-        data: {
-          user_id: data.id,
-          token, // O app Expo salva esse valor no SecureStore
-        },
+        token
       },
       { status: 200 }
     )

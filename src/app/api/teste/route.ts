@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
 
-  return NextResponse.json(await OrderStatusFind())
+  // return NextResponse.json(await OrderStatusFind())
 
   return NextResponse.json({
     sucesso: true,

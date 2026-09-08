@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const { errorResponse, user } = await authenticateRequest(req);
     if (errorResponse) return errorResponse;
 
-    // lógica da sua rota usando o usuário autenticado
+    // lógica da rota usando o usuário autenticado
     return NextResponse.json({
       msg: "tudo certo até aqui...",
       user,
