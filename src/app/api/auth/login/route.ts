@@ -62,9 +62,6 @@ export async function POST(req: NextRequest) {
       },
       { status: 200 }
     )
-
-
-
   } catch (error) {
     console.error('API AUTH POST', error)
     return NextResponse.json(

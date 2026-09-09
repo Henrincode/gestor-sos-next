@@ -15,7 +15,7 @@ export async function authenticateRequest(req: NextRequest) {
   if (!token) {
     return {
       errorResponse: NextResponse.json(
-        { success: false, message: "Token não fornecido" },
+        { success: false, message: "Token não fornecido, faça login para um novo token" },
         { status: 401 }
       ),
       user: null,

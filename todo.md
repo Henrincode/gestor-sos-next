@@ -1,0 +1,1 @@
+- na rota de login checar se esta logado, se estiver envia mensagem de usuário logado e sugere a rota de logout

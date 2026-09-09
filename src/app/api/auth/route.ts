@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     // autenticação
-    const { errorResponse, user } = await authenticateRequest(req);
-    if (errorResponse) return errorResponse;
+    const { errorResponse, user } = await authenticateRequest(req)
+    if (errorResponse) return errorResponse
 
     // lógica da rota usando o usuário autenticado
     return NextResponse.json({
