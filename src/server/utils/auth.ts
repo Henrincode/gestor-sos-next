@@ -7,9 +7,7 @@ export async function authenticateRequest(req: NextRequest) {
   const tokenFromCookie = req.cookies.get("auth_token")?.value ?? req.cookies.get("token")?.value
   const tokenFromHeader = req.headers.get("auth_token")
 
-  const token = tokenFromCookie ?? tokenFromHeader;
-
-  console.log(token)
+  const token = tokenFromCookie ?? tokenFromHeader
 
   // erro se o token não for enviado
   if (!token) {
