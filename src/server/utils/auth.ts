@@ -4,7 +4,7 @@ import authService from "../services/auth";
 
 export async function authenticateRequest(req: NextRequest) {
   // tenta extrair do cookie ou header
-  const tokenFromCookie = req.cookies.get("auth_token")?.value ?? req.cookies.get("token")?.value
+  const tokenFromCookie = req.cookies.get("auth_token")?.value
   const tokenFromHeader = req.headers.get("auth_token")
 
   const token = tokenFromCookie ?? tokenFromHeader
@@ -21,7 +21,7 @@ export async function authenticateRequest(req: NextRequest) {
   }
 
   // valida no banco/serviço
-  const user = await authService.check(token);
+  const user = await authService.tokenCheck(token);
 
   // erro se o token for inválido
   if (!user) {

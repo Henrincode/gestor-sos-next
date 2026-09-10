@@ -63,21 +63,13 @@ async function getPasswordByEmail(email: string) {
   return row || null
 }
 
-// create token
-async function tokenCreate({ id, token }: { id: number, token: string }) {
-  const [row] = await sql<[{ token: string }]>`
-    INSERT INTO sos_user_tokens ${sql({ user_id: id, token })}
-    RETURNING token
-  `
-  return row.token
-}
+
 
 
 
 const userService = {
   create,
-  getPasswordByEmail,
-  tokenCreate
+  getPasswordByEmail
 }
 
 export default userService

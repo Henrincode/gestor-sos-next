@@ -3,9 +3,18 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from 'bcrypt';
 import crypto from "crypto";
 import { cookies } from "next/headers";
+import authService from "@/server/services/auth";
+import { authenticateRequest } from "@/server/utils/auth";
 
 export async function POST(req: NextRequest) {
   try {
+
+    // autenticação: se estiver logado não deixa criar uma conta.
+    const { errorResponse, user } = await authenticateRequest(req)
+    if (user) {
+      console.log(user)
+      return NextResponse.json({ success: false, message: "Você já esta logado!" })
+    }
 
     const body = await req.json()
     const { email, password } = body
@@ -41,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     // Gera um token opaco aleatório seguro de 64 caracteres hexadecimais
     const token = crypto.randomBytes(32).toString("hex")
-    await userService.tokenCreate({id: data.id, token})
+    await authService.tokenCreate({ id: data.id, token })
 
     // Define o Cookie HTTP-Only (Web / Navegador)
     const cookieStore = await cookies();

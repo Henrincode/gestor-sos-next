@@ -1,7 +1,7 @@
 import sql from "../db/supabase";
 
 // check token
-async function check(token: string) {
+async function tokenCheck(token: string) {
   const [row] = await sql<[{ id: number }]>`
     SELECT 
       u.id,
@@ -17,11 +17,32 @@ async function check(token: string) {
       and e.is_primary = true
     LIMIT 1
   `
-  return row || null
+  return row
+}
+
+// cria um token
+async function tokenCreate({ id, token }: { id: number, token: string }) {
+  const [row] = await sql<[{ token: string }]>`
+    INSERT INTO sos_user_tokens ${sql({ user_id: id, token })}
+    RETURNING token
+  `
+  return row.token
+}
+
+// remove o token
+async function tokenDelete(token: string) {
+  const [row] = await sql<[{token: string}]>`
+    UPDATE sos_user_tokens SET
+    deleted_at = NOW()
+    WHERE token = ${token}
+  `
+  return row
 }
 
 const authService = {
-  check
+  tokenCheck,
+  tokenCreate,
+  tokenDelete
 }
 
 export default authService

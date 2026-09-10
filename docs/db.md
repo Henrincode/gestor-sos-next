@@ -14,6 +14,7 @@ CREATE TABLE sos_user_tokens (
   user_id INT NOT NULL REFERENCES sos_users(id) ON DELETE CASCADE,
   token VARCHAR(255) NOT NULL UNIQUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  deleted_at TIMESTAMPTZ NULL
 );
 
 -- 3. E-mails de Usuário
@@ -31,6 +32,7 @@ CREATE TABLE sos_companies (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  deleted_at TIMESTAMPTZ NULL
 );
 
 -- 5. Tipos de Permissão de Usuário na Empresa
@@ -97,7 +99,8 @@ CREATE TABLE sos_order_photos (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   order_id INT NOT NULL REFERENCES sos_orders(id) ON DELETE CASCADE,
   url VARCHAR(255) NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ NULL
 );
 
 -- 13. Atualizações da Ordem de Serviço
@@ -117,7 +120,8 @@ CREATE TABLE sos_order_update_photos (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   order_update_id INT NOT NULL REFERENCES sos_order_updates(id) ON DELETE CASCADE,
   url VARCHAR(255) NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ NULL
 );
 
 -- ==========================================
@@ -125,7 +129,8 @@ CREATE TABLE sos_order_update_photos (
 -- ==========================================
 
 INSERT INTO sos_company_user_permissions (type) VALUES 
-  ('Leitura'), ('Escrita'), ('Apagar'), ('Administrador');
+  ('Convidado'), ('Escrita'), ('Apagar'), ('Administrador');
+  ('Só vê as ordens que participa'), ('Pode criar ordens'), ('Pode ver todas as ordens'), ('Pode comentar todas as ordens'), ('Pode administrar todas as ordens'), ('Pode administrar a empresa');
 
 INSERT INTO sos_order_statuses (name) VALUES 
   ('Pendente'), ('Em progresso'), ('Completado'), ('Cancelado');

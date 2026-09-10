@@ -5,12 +5,16 @@ import bcrypt from 'bcrypt';
 import userService from "@/server/services/users";
 import { UserCreate } from "@/types/users";
 import { cookies } from "next/headers";
+import authService from "@/server/services/auth";
 
 export async function POST(req: NextRequest) {
   try {
     // autenticação: se estiver logado não deixa criar uma conta.
     const { errorResponse, user } = await authenticateRequest(req)
-    if (errorResponse) return errorResponse
+    if (user) {
+      console.log(user)
+      return NextResponse.json({success: false, message: "Você já esta logado!"})
+    }
 
     // extrai usuário email e senha
     const body: UserCreate = await req.json()
@@ -25,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     // Gera um token opaco aleatório seguro de 64 caracteres hexadecimais
     const token = crypto.randomBytes(32).toString("hex")
-    await userService.tokenCreate({ id: data.id, token })
+    await authService.tokenCreate({ id: data.id, token })
 
     // Define o Cookie HTTP-Only (Web / Navegador)
     const cookieStore = await cookies();
