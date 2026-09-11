@@ -1,6 +1,4 @@
-import { authenticateRequest } from "@/server/utils/auth";
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import bcrypt from 'bcrypt';
 import userService from "@/server/services/users";
 import { UserCreate } from "@/types/users";
@@ -9,15 +7,18 @@ import authService from "@/server/services/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    // autenticação: se estiver logado não deixa criar uma conta.
-    const { errorResponse, user } = await authenticateRequest(req)
-    if (user) {
-      return NextResponse.json({success: false, message: "Você já esta logado!"})
+    // autenticação: se estiver logado não deixa criar conta
+    const session = await authService.session(req)
+
+    if (session.user) {
+      return NextResponse.json(
+        { message: "Você esta logado no sistema, faça logout para criar outro usuário." },
+        { status: 409 }
+      )
     }
 
-    // extrai usuário email e senha
-    const body: UserCreate = await req.json()
-    const { name, email, password } = body
+    // extrai campos do body da requisição
+    const { name, email, password }: UserCreate = await req.json()
 
     // faz o hash da senha
     const passHash = await bcrypt.hash(password, 10)
@@ -26,9 +27,8 @@ export async function POST(req: NextRequest) {
     const newUser: UserCreate = { name, email, password: passHash }
     const data = await userService.create(newUser)
 
-    // Gera um token opaco aleatório seguro de 64 caracteres hexadecimais
-    const token = crypto.randomBytes(32).toString("hex")
-    await authService.tokenCreate({ id: data.id, token })
+    // gera um token de autenticação
+    const token = await authService.tokenCreate(data.id)
 
     // Define o Cookie HTTP-Only (Web / Navegador)
     const cookieStore = await cookies();
@@ -41,22 +41,25 @@ export async function POST(req: NextRequest) {
     })
 
     // retorna mensagem de sucesso
-    return NextResponse.json({
-      success: true, message: `Usuário ${data.name} com e-mail ${data.emails[0].email} criado com sucesso!`
-    })
+    return NextResponse.json(
+      { message: `Usuário ${data.name} com e-mail ${data.emails[0].email} criado com sucesso!` },
+      { status: 201 }
+    )
 
   } catch (error: any) {
     // caso email já exista informa o front-end
     console.error("ERROR API AUTH CREATE", error)
-    if (error.code === '23505') {
-      return NextResponse.json({
-        success: false, message: "E-Mail já existe"
-      })
+    if (error?.code === '23505') {
+      return NextResponse.json(
+        { message: "E-Mail já existe" },
+        { status: 409 }
+      )
     }
 
     // retorn padrão
-    return NextResponse.json({
-      success: false, message: "Erro interno do servidor"
-    })
+    return NextResponse.json(
+      { message: "Ocorreu um erro interno em nossos servidores. Tente novamente mais tarde." },
+      { status: 500 }
+    )
   }
 }

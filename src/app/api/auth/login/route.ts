@@ -1,58 +1,61 @@
 import userService from "@/server/services/users";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from 'bcrypt';
-import crypto from "crypto";
 import { cookies } from "next/headers";
 import authService from "@/server/services/auth";
-import { authenticateRequest } from "@/server/utils/auth";
 
 export async function POST(req: NextRequest) {
   try {
 
-    // autenticação: se estiver logado não deixa criar uma conta.
-    const { errorResponse, user } = await authenticateRequest(req)
-    if (user) {
-      console.log(user)
-      return NextResponse.json({ success: false, message: "Você já esta logado!" })
-    }
+    // autenticação: se estiver logado não gera outro token
+    const session = await authService.session(req)
 
-    const body = await req.json()
-    const { email, password } = body
-
-    // verifica se email e senha não são nulos
-    if (!email) {
+    if (session.user) {
       return NextResponse.json(
-        { success: false, message: 'E-mail deve ser preenchido' }
+        { message: "Você esta logado no sistema, faça logout para entrar com outra conta." },
+        { status: 409 }
       )
     }
 
-    if (!password) {
+    // extrai campos do body da requisição
+    const { email, password } = await req.json()
+
+    // verifica se existem campos undefined
+    if (!email || !password) {
       return NextResponse.json(
-        { success: false, message: 'Senha deve ser preenchido' }
+        {
+          message: "Body contém campos ausente",
+          fields: {
+            email: !!email,
+            password: !!password
+          }
+        },
+        { status: 400 }
       )
     }
 
-    // busca email no banco, se existir já trás id e senha
+    // busca email no banco, se existir retorna id e senha
     const data = await userService.getPasswordByEmail(email)
 
     if (!data) {
       return NextResponse.json(
-        { success: false, message: 'E-Mail ou senha inválidos' }
+        { message: 'E-Mail ou senha inválidos' },
+        { status: 400 }
       )
     }
 
     // compara o hash das senhas
     if (!await bcrypt.compare(password, data.password)) {
       return NextResponse.json(
-        { success: false, message: 'E-Mail ou senha inválidos' }
+        { message: 'E-Mail ou senha inválidos' },
+        { status: 400 }
       )
     }
 
-    // Gera um token opaco aleatório seguro de 64 caracteres hexadecimais
-    const token = crypto.randomBytes(32).toString("hex")
-    await authService.tokenCreate({ id: data.id, token })
+    // gera um token de autenticação
+    const token = await authService.tokenCreate(data.id)
 
-    // Define o Cookie HTTP-Only (Web / Navegador)
+    // define o Cookie HTTP-Only (Web / Navegador)
     const cookieStore = await cookies();
     cookieStore.set("auth_token", token, {
       httpOnly: true,
@@ -62,11 +65,10 @@ export async function POST(req: NextRequest) {
       path: "/",
     })
 
-    // Retorna a resposta de sucesso com os dados limpos e o token no json (expo / mobile)
+    // retorna a resposta de sucesso com os dados limpos e o token no json (expo / mobile)
     return NextResponse.json(
       {
-        success: true,
-        message: "Login realizado com sucesso",
+        message: "Login realizado com sucesso.",
         token
       },
       { status: 200 }
@@ -74,7 +76,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('API AUTH POST', error)
     return NextResponse.json(
-      { success: false, message: 'Erro interno do servidor' },
+      { message: "Ocorreu um erro interno em nossos servidores. Tente novamente mais tarde." },
       { status: 500 }
     )
   }
