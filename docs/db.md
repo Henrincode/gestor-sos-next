@@ -13,7 +13,7 @@ CREATE TABLE sos_user_tokens (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id INT NOT NULL REFERENCES sos_users(id) ON DELETE CASCADE,
   token VARCHAR(255) NOT NULL UNIQUE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   deleted_at TIMESTAMPTZ NULL
 );
 
@@ -31,14 +31,14 @@ CREATE TABLE sos_user_emails (
 CREATE TABLE sos_companies (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   deleted_at TIMESTAMPTZ NULL
 );
 
 -- 5. Tipos de Permissão de Usuário na Empresa
 CREATE TABLE sos_company_user_permissions (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  type VARCHAR(255) NOT NULL UNIQUE
+  name VARCHAR(255) NOT NULL UNIQUE
 );
 
 -- 6. Vínculo Usuário <-> Empresa (Junction)
@@ -61,20 +61,19 @@ CREATE TABLE sos_company_locations (
 -- 8. Status da Ordem de Serviço
 CREATE TABLE sos_order_statuses (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  name VARCHAR(255) NOT NULL
+  name VARCHAR(255) NOT NULL UNIQUE
 );
 
 -- 9. Prioridades da Ordem de Serviço
 CREATE TABLE sos_order_priorities (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  name VARCHAR(255) NOT NULL
+  name VARCHAR(255) NOT NULL UNIQUE
 );
 
--- 10. Ordens de Serviço
+-- 10. Ordens de Serviço (Removida a coluna user_id direta)
 CREATE TABLE sos_orders (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   company_id INT NOT NULL REFERENCES sos_companies(id) ON DELETE CASCADE,
-  user_id INT NOT NULL REFERENCES sos_users(id), -- Solicitante
   location_id INT NOT NULL REFERENCES sos_company_locations(id),
   priority_id INT NOT NULL REFERENCES sos_order_priorities(id),
   status_id INT NOT NULL REFERENCES sos_order_statuses(id),
@@ -87,14 +86,21 @@ CREATE TABLE sos_orders (
   deleted_at TIMESTAMPTZ NULL
 );
 
--- 11. Responsáveis pela Ordem de Serviço (Junction)
-CREATE TABLE sos_order_assignees (
-  order_id INT NOT NULL REFERENCES sos_orders(id) ON DELETE CASCADE,
-  user_id INT NOT NULL REFERENCES sos_users(id) ON DELETE CASCADE,
-  PRIMARY KEY (order_id, user_id)
+-- 11. Papéis do Usuário na Ordem de Serviço
+CREATE TABLE sos_order_user_permissions (
+  id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE
 );
 
--- 12. Fotos da Ordem de Serviço
+-- 12. Usuários da Ordem de Serviço (Junction)
+CREATE TABLE sos_order_users (
+  order_id INT NOT NULL REFERENCES sos_orders(id) ON DELETE CASCADE,
+  user_id INT NOT NULL REFERENCES sos_users(id) ON DELETE CASCADE,
+  permission_id INT NOT NULL REFERENCES sos_order_user_permissions(id),
+  PRIMARY KEY (order_id, user_id, permission_id)
+);
+
+-- 13. Fotos da Ordem de Serviço
 CREATE TABLE sos_order_photos (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   order_id INT NOT NULL REFERENCES sos_orders(id) ON DELETE CASCADE,
@@ -103,7 +109,7 @@ CREATE TABLE sos_order_photos (
   deleted_at TIMESTAMPTZ NULL
 );
 
--- 13. Atualizações da Ordem de Serviço
+-- 14. Atualizações da Ordem de Serviço
 CREATE TABLE sos_order_updates (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   order_id INT NOT NULL REFERENCES sos_orders(id) ON DELETE CASCADE,
@@ -115,7 +121,7 @@ CREATE TABLE sos_order_updates (
   deleted_at TIMESTAMPTZ NULL
 );
 
--- 14. Fotos das Atualizações
+-- 15. Fotos das Atualizações
 CREATE TABLE sos_order_update_photos (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   order_update_id INT NOT NULL REFERENCES sos_order_updates(id) ON DELETE CASCADE,
@@ -125,16 +131,30 @@ CREATE TABLE sos_order_update_photos (
 );
 
 -- ==========================================
--- POPULAÇÃO INICIAL DE LOOKUPS (OPCIONAL)
+-- POPULAÇÃO INICIAL DE LOOKUPS
 -- ==========================================
 
-INSERT INTO sos_company_user_permissions (type) VALUES 
-  ('Convidado'), ('Escrita'), ('Apagar'), ('Administrador');
-  ('Só vê as ordens que participa'), ('Pode criar ordens'), ('Pode ver todas as ordens'), ('Pode comentar todas as ordens'), ('Pode administrar todas as ordens'), ('Pode administrar a empresa');
+INSERT INTO sos_company_user_permissions (name) VALUES 
+  ('Proprietário'),
+  ('Administrador'),
+  ('Operador'),
+  ('Técnico'),
+  ('Solicitante');
+
+INSERT INTO sos_order_user_permissions (name) VALUES
+  ('Solicitante'),
+  ('Responsável'),
+  ('Observador');
 
 INSERT INTO sos_order_statuses (name) VALUES 
-  ('Pendente'), ('Em progresso'), ('Completado'), ('Cancelado');
+  ('Pendente'), 
+  ('Em progresso'), 
+  ('Completado'), 
+  ('Cancelado');
 
 INSERT INTO sos_order_priorities (name) VALUES 
-  ('Baixa'), ('Média'), ('Alta'), ('Urgente');
+  ('Baixa'), 
+  ('Média'), 
+  ('Alta'), 
+  ('Urgente');
 ```

@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
     // autenticação: se estiver logado não deixa criar uma conta.
     const { errorResponse, user } = await authenticateRequest(req)
     if (user) {
-      console.log(user)
       return NextResponse.json({success: false, message: "Você já esta logado!"})
     }
 
@@ -48,6 +47,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     // caso email já exista informa o front-end
+    console.error("ERROR API AUTH CREATE", error)
     if (error.code === '23505') {
       return NextResponse.json({
         success: false, message: "E-Mail já existe"

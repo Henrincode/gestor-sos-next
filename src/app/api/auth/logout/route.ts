@@ -10,10 +10,9 @@ export async function DELETE(req: NextRequest) {
   
   // apaga o cookie
   const cookieStore = await cookies()
-
-
-  const data = await authService.tokenDelete(token)
+  await authService.tokenDelete(token)
   
+  // soft delete do token no banco
   cookieStore.delete({ name: 'auth_token', path: '/' })
 
   return NextResponse.json({msg: 'token removido?'})
