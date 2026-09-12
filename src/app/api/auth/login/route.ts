@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
     if (session.user) {
       return NextResponse.json(
-        { message: "Você esta logado no sistema, faça logout para entrar com outra conta." },
+        { message: "Você já esta logado no sistema, faça logout para entrar com outra conta." },
         { status: 409 }
       )
     }

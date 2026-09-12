@@ -6,7 +6,7 @@ export async function DELETE(req: NextRequest) {
   
   // captura o token 
   const token = req.cookies.get('auth_token')?.value
-  if(!token) return NextResponse.json({msg: 'sem token'})
+  if(!token) return NextResponse.json({msg: 'sem token.'})
   
   // apaga o cookie
   const cookieStore = await cookies()
@@ -15,5 +15,5 @@ export async function DELETE(req: NextRequest) {
   // soft delete do token no banco
   cookieStore.delete({ name: 'auth_token', path: '/' })
 
-  return NextResponse.json({msg: 'token removido?'})
+  return NextResponse.json({msg: 'token removido.'})
 }
