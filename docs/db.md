@@ -1,6 +1,6 @@
 ```sql
 -- ==========================================
--- 1. ESTRUTURA DAS TABELAS (DDL)
+-- 1. ESTRUTURA DAS TABELAS
 -- ==========================================
 
 -- 1. Tabela de Usuários
