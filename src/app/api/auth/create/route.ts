@@ -4,6 +4,7 @@ import userService from "@/server/services/users";
 import { UserCreate } from "@/types/users";
 import { cookies } from "next/headers";
 import authService from "@/server/services/auth";
+import tokenService from "@/server/services/tokens";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
     const data = await userService.create(newUser)
 
     // gera um token de autenticação
-    const token = await authService.tokenCreate(data.id)
+    const token = await tokenService.create(data.id)
 
     // Define o Cookie HTTP-Only (Web / Navegador)
     const cookieStore = await cookies();

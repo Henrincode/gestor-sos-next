@@ -22,6 +22,8 @@
 
 - 404 Not Found: O recurso solicitado não existe na URL informada.
 
+- 405 Method Not Allowed: O recurso existe na URL, mas o método HTTP utilizado (ex.: GET, POST) não é suportado por esse endpoint.
+
 - 409 Conflict: Conflito no estado atual do recurso (ex.: tentar cadastrar um e-mail já existente).
 
 - 422 Unprocessable Entity: Sintaxe correta, mas com erro de validação nos dados enviados.

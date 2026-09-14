@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
 import authService from "@/server/services/auth";
+import tokenService from "@/server/services/tokens";
 
 export async function POST(req: NextRequest) {
   try {
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     }
 
     // gera um token de autenticação
-    const token = await authService.tokenCreate(data.id)
+    const token = await tokenService.create(data.id)
 
     // define o Cookie HTTP-Only (Web / Navegador)
     const cookieStore = await cookies();
