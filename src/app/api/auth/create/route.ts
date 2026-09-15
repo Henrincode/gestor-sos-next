@@ -21,6 +21,21 @@ export async function POST(req: NextRequest) {
     // extrai campos do body da requisição
     const { name, email, password }: UserCreate = await req.json()
 
+    // verifica se existem campos undefined
+    if (!email || !email || !password) {
+      return NextResponse.json(
+        {
+          message: "Body contém campos ausente",
+          fields: {
+            name: !!name,
+            email: !!email,
+            password: !!password
+          }
+        },
+        { status: 400 }
+      )
+    }
+
     // faz o hash da senha
     const passHash = await bcrypt.hash(password, 10)
 

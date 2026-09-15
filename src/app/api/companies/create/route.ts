@@ -7,6 +7,4 @@ export async function POST(req: NextRequest) {
   if (!name) {
     return NextResponse.json({ success: false, message: "Campo nome deve ser preenchido" })
   }
-
-  
 }
