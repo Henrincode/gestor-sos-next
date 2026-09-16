@@ -8,7 +8,8 @@ import tokenService from "@/server/services/tokens";
 
 export async function POST(req: NextRequest) {
   try {
-    // autenticação: se estiver logado não deixa criar conta
+    // autenticação:
+    // se estiver logado não deixa criar conta outra conta
     const session = await authService.session(req)
 
     if (session.user) {
@@ -25,11 +26,11 @@ export async function POST(req: NextRequest) {
     if (!email || !email || !password) {
       return NextResponse.json(
         {
-          message: "Body contém campos ausente",
-          fields: {
-            name: !!name,
-            email: !!email,
-            password: !!password
+          message: "Corpo 'body' da requisição contém campos ausente.",
+          errors: {
+            ...(!name && { name: ["Campo ausente"] }),
+            ...(!email && { email: ["Campo ausente"] }),
+            ...(!password && { name: ["Campo ausente"] }),
           }
         },
         { status: 400 }
@@ -63,16 +64,17 @@ export async function POST(req: NextRequest) {
     )
 
   } catch (error: any) {
-    // caso email já exista informa o front-end
-    console.error("ERROR API AUTH CREATE", error)
-    if (error?.code === '23505') {
+    console.log("ERROR api/auth/create:", error)
+
+    // retorna informação de email já cadastrado para o frontend
+    if (error?.code === "23505") {
       return NextResponse.json(
-        { message: "E-Mail já existe" },
+        { message: "E-Mail já cadastrado." },
         { status: 409 }
       )
     }
 
-    // retorn padrão
+    // retorna um erro tratado para o frontend
     return NextResponse.json(
       { message: "Ocorreu um erro interno em nossos servidores. Tente novamente mais tarde." },
       { status: 500 }

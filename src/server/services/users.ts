@@ -60,7 +60,7 @@ async function getPasswordByEmail(email: string) {
     WHERE e.email = ${email}
     LIMIT 1
   `
-  return row || null
+  return row
 }
 
 

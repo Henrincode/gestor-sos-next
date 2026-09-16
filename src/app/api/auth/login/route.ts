@@ -7,8 +7,8 @@ import tokenService from "@/server/services/tokens";
 
 export async function POST(req: NextRequest) {
   try {
-
-    // autenticação: se estiver logado não gera outro token
+    // autenticação:
+    // se estiver logado não gera outro token
     const session = await authService.session(req)
 
     if (session.user) {
@@ -26,9 +26,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           message: "Body contém campos ausente",
-          fields: {
-            email: !!email,
-            password: !!password
+          errors: {
+            ...(!email && { email: ["Campo ausente"] }),
+            ...(!password && { name: ["Campo ausente"] }),
           }
         },
         { status: 400 }
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       path: "/",
     })
 
-    // retorna a resposta de sucesso com os dados limpos e o token no json (expo / mobile)
+    // retorna a resposta de sucesso com token (expo / mobile)
     return NextResponse.json(
       {
         message: "Login realizado com sucesso.",
@@ -74,8 +74,11 @@ export async function POST(req: NextRequest) {
       },
       { status: 200 }
     )
+
   } catch (error) {
-    console.error('API AUTH POST', error)
+    console.log('ERRPR api/auth/login', error)
+
+    // retorna um erro tratado para o frontend
     return NextResponse.json(
       { message: "Ocorreu um erro interno em nossos servidores. Tente novamente mais tarde." },
       { status: 500 }

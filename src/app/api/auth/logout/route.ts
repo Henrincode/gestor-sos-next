@@ -4,20 +4,28 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(req: NextRequest) {
+  try {
+    // autenticação:
+    // se o usuário não estiver logado não roda a api
+    const session = await authService.session(req)
+    if (session.error) return NextResponse.json({ message: session.error.message }, { status: 401 })
 
-  // captura o token 
-  // const token = req.cookies.get('auth_token')?.value
-  // if (!token) return NextResponse.json({ msg: 'sem token.' }, {status: 401})
+    // apaga o cookie
+    const cookieStore = await cookies()
+    await tokenService.delete(session.token)
 
-  const session = await authService.session(req)
-  if (session.error) return NextResponse.json({ message: session.error.message }, { status: 401 })
+    // soft delete do token no banco
+    cookieStore.delete({ name: 'auth_token', path: '/' })
 
-  // apaga o cookie
-  const cookieStore = await cookies()
-  await tokenService.delete(session.token)
+    return NextResponse.json({ message: 'token removido com sucesso.' }, { status: 200 })
 
-  // soft delete do token no banco
-  cookieStore.delete({ name: 'auth_token', path: '/' })
+  } catch (error) {
+    console.log("ERROR api/auth/logout:", error)
 
-  return NextResponse.json({ message: 'token removido.' }, { status: 200 })
+    // retorna um erro tratado para o frontend
+    return NextResponse.json(
+      { message: "Ocorreu um erro interno em nossos servidores. Tente novamente mais tarde." },
+      { status: 500 }
+    )
+  }
 }
