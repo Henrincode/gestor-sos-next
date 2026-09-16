@@ -25,7 +25,7 @@ CREATE TABLE sos_user_tokens (
 CREATE TABLE sos_user_emails (
   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id INT NOT NULL REFERENCES sos_users(id) ON DELETE CASCADE,
-  email VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
   is_primary BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   deleted_at TIMESTAMPTZ NULL
@@ -35,7 +35,7 @@ CREATE TABLE sos_user_emails (
 -- CREATE UNIQUE INDEX idx_sos_user_emails_active ON sos_user_emails(email) WHERE deleted_at IS NULL;
 
 -- Unicidade parcial: garante no máximo 1 e-mail principal ativo por usuário
-CREATE UNIQUE INDEX idx_sos_user_primary_email ON sos_user_emails(user_id) WHERE is_primary = TRUE AND deleted_at IS NULL;
+-- CREATE UNIQUE INDEX idx_sos_user_primary_email ON sos_user_emails(user_id) WHERE is_primary = TRUE AND deleted_at IS NULL;
 
 -- 4. Empresas (Multi-tenant)
 CREATE TABLE sos_companies (

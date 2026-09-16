@@ -59,7 +59,11 @@ export async function POST(req: NextRequest) {
 
     // retorna mensagem de sucesso
     return NextResponse.json(
-      { message: `Usuário ${data.name} com e-mail ${data.emails[0].email} criado com sucesso!` },
+      {
+        success: true,
+        message: `Usuário "${data.name}" com e-mail "${data.emails[0].email}" criado com sucesso!`,
+        data: { token }
+      },
       { status: 201 }
     )
 
@@ -69,14 +73,23 @@ export async function POST(req: NextRequest) {
     // retorna informação de email já cadastrado para o frontend
     if (error?.code === "23505") {
       return NextResponse.json(
-        { message: "E-Mail já cadastrado." },
+        {
+          success: false,
+          message: "E-Mail já cadastrado.",
+          errors: {
+            email: ["E-Mail já cadastrado."]
+          }
+        },
         { status: 409 }
       )
     }
 
     // retorna um erro tratado para o frontend
     return NextResponse.json(
-      { message: "Ocorreu um erro interno em nossos servidores. Tente novamente mais tarde." },
+      {
+        success: false,
+        message: "Ocorreu um erro interno em nossos servidores. Tente novamente mais tarde."
+      },
       { status: 500 }
     )
   }
