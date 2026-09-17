@@ -18,17 +18,25 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // extrai campos do body da requisição
-    const { email, password } = await req.json()
+    // testa se o body existe
+    const body = await req.json().catch(() => null)
+
+    if (!body) return NextResponse.json(
+      { message: "O corpo da requisição não pode estar vazio ou ser um JSON inválido." },
+      { status: 400 }
+    )
+
+    // extrai campos necessários
+    const { email, password } = body
 
     // verifica se existem campos undefined
     if (!email || !password) {
       return NextResponse.json(
         {
-          message: "Body contém campos ausente",
+          message: "O corpo da requisição contém campos ausentes ou inválidos",
           errors: {
             ...(!email && { email: ["Campo obrigatório"] }),
-            ...(!password && { name: ["Campo obrigatório"] }),
+            ...(!password && { password: ["Campo obrigatório"] }),
           }
         },
         { status: 400 }
@@ -54,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
 
     // gera um token de autenticação
-    const token = await tokenService.create(data.id)
+    const { token } = await tokenService.create(data.id)
 
     // define o Cookie HTTP-Only (Web / Navegador)
     const cookieStore = await cookies();
@@ -67,7 +75,7 @@ export async function POST(req: NextRequest) {
     })
 
     // retorna a resposta de sucesso com token (expo / mobile)
-    return NextResponse.json({ token }, { status: 200 })
+    return NextResponse.json({ data: { token } }, { status: 201 })
 
   } catch (error) {
     console.log('ERRPR api/auth/login', error)

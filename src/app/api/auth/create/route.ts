@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const data = await userService.create(newUser)
 
     // gera um token de autenticação
-    const token = await tokenService.create(data.id)
+    const { token } = await tokenService.create(data.id)
 
     // Define o Cookie HTTP-Only (Web / Navegador)
     const cookieStore = await cookies();

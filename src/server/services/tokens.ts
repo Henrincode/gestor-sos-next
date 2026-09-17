@@ -2,6 +2,13 @@ import sql from "../db/supabase";
 import crypto from 'crypto';
 import { revalidateTag, unstable_cache } from "next/cache";
 
+type TokenCheckReturn = {
+  id: number,
+  name: string,
+  email_id: number,
+  email: string,
+}
+
 // ----------
 // TOKEN CHECK
 // ----------
@@ -42,7 +49,7 @@ async function create(user_id: number) {
 
   if (row) revalidateTag("tokens", "max")
 
-  return row.token
+  return row
 }
 
 // ----------
