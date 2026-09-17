@@ -17,7 +17,8 @@ export async function DELETE(req: NextRequest) {
     // soft delete do token no banco
     cookieStore.delete({ name: 'auth_token', path: '/' })
 
-    return NextResponse.json({ message: 'token removido com sucesso.' }, { status: 200 })
+    // retorna que o token foi removido com sucesso!
+    return new NextResponse(null, { status: 204 })
 
   } catch (error) {
     console.log("ERROR api/auth/logout:", error)

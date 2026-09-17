@@ -23,14 +23,14 @@ export async function POST(req: NextRequest) {
     const { name, email, password }: UserCreate = await req.json()
 
     // verifica se existem campos undefined
-    if (!email || !email || !password) {
+    if (!name || !email || !password) {
       return NextResponse.json(
         {
           message: "Corpo 'body' da requisição contém campos ausente.",
           errors: {
-            ...(!name && { name: ["Campo ausente"] }),
-            ...(!email && { email: ["Campo ausente"] }),
-            ...(!password && { name: ["Campo ausente"] }),
+            ...(!name && { name: ["Campo obrigatório"] }),
+            ...(!email && { email: ["Campo obrigatório"] }),
+            ...(!password && { password: ["Campo obrigatório"] }),
           }
         },
         { status: 400 }
@@ -60,9 +60,10 @@ export async function POST(req: NextRequest) {
     // retorna mensagem de sucesso
     return NextResponse.json(
       {
-        success: true,
-        message: `Usuário "${data.name}" com e-mail "${data.emails[0].email}" criado com sucesso!`,
-        data: { token }
+        data: {
+          ...data,
+          token
+        }
       },
       { status: 201 }
     )
@@ -74,8 +75,7 @@ export async function POST(req: NextRequest) {
     if (error?.code === "23505") {
       return NextResponse.json(
         {
-          success: false,
-          message: "E-Mail já cadastrado.",
+          message: "E-Mail já cadastrado, tente outro.",
           errors: {
             email: ["E-Mail já cadastrado."]
           }
@@ -87,7 +87,6 @@ export async function POST(req: NextRequest) {
     // retorna um erro tratado para o frontend
     return NextResponse.json(
       {
-        success: false,
         message: "Ocorreu um erro interno em nossos servidores. Tente novamente mais tarde."
       },
       { status: 500 }

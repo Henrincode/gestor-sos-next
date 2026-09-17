@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
         {
           message: "Body contém campos ausente",
           errors: {
-            ...(!email && { email: ["Campo ausente"] }),
-            ...(!password && { name: ["Campo ausente"] }),
+            ...(!email && { email: ["Campo obrigatório"] }),
+            ...(!password && { name: ["Campo obrigatório"] }),
           }
         },
         { status: 400 }
@@ -67,13 +67,7 @@ export async function POST(req: NextRequest) {
     })
 
     // retorna a resposta de sucesso com token (expo / mobile)
-    return NextResponse.json(
-      {
-        message: "Login realizado com sucesso.",
-        token
-      },
-      { status: 200 }
-    )
+    return NextResponse.json({ token }, { status: 200 })
 
   } catch (error) {
     console.log('ERRPR api/auth/login', error)
